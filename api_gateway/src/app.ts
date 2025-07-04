@@ -6,7 +6,7 @@ import morgan from "morgan";
 
 config();
 
-const port: string = process.env.PORT || "3000";
+const port: string = process.env.GATEWAY_PORT || "3000";
 const env: string = process.env.NODE_ENV || "development";
 
 const app: Express = express();

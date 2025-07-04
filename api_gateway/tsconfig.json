@@ -15,7 +15,7 @@
     "alwaysStrict": true,                  
     "strictNullChecks": true,              
     "strictFunctionTypes": true,           
-    "strictBindCallApply": true,           
+    "strictBindCallApply": true,          
 
     // Module system
     "esModuleInterop": true,

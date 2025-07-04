@@ -4,12 +4,12 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "dev": "concurrently 'npm run lint' 'tsc -w' 'nodemon -q dist/app.js'",
+    "dev": "npm run lint && concurrently 'npx tsc --watch' 'nodemon -q dist/app.js'",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "build": "npx tsc",
-    "start": "node dist/app.js"
+    "build": "npm run lint && npx tsc",
+    "start": "npm run build && node dist/app.js"
   },
   "keywords": [],
   "author": "",

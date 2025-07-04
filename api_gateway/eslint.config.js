@@ -23,6 +23,8 @@ export default tseslint.config([
       prettier: prettierPlugin
     },
     rules: {
+      'no-var': 'error',
+      'prefer-const': 'error', 
       // Prettier integration
       'prettier/prettier': ['error', { tabWidth: 2, semi: true }],
 
