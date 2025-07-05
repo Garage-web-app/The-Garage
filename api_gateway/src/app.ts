@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import { config } from "dotenv";
 import cors from "cors";
 import morgan from "morgan";
+import { router as homeRouter } from "./routers/home_router";
 
 config();
 
@@ -19,6 +20,8 @@ app.use(cookieParser());
 if (env === "development") {
   app.use(morgan("dev"));
 }
+
+app.use("/", homeRouter);
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
