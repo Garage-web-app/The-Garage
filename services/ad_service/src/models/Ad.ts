@@ -29,7 +29,7 @@ const adSchema = new Schema<Ad>({
     zipCode: { type: Number, required: true },
     required: true
   },
-  userEmail: { type: String, required: true },                //userEmail is the foreign key to the user which creates the add
+  userEmail: { type: String, required: true, ref: 'User' },                //userEmail is the foreign key to the user which creates the add
   adCreationDate: { type: Date, required: true, default: Date.now }
 });
 
