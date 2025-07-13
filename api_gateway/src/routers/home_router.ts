@@ -1,14 +1,14 @@
 import {
-  Router,
-  type Request,
-  type Response,
-  type NextFunction,
+    Router,
+    type Request,
+    type Response,
+    type NextFunction,
 } from "express";
+import mqtt from "mqtt";
+import { welcomeController } from "../controllers/welcome_controller.js";
 
 const router: Router = Router();
 
-router.get("/", (req: Request, res: Response, next: NextFunction) => {
-  res.status(200).send("Hello World!");
-});
+router.get("/", welcomeController);
 
 export { router };

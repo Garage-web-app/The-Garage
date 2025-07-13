@@ -26,7 +26,7 @@ export default tseslint.config([
       'no-var': 'error',
       'prefer-const': 'error', 
       // Prettier integration
-      'prettier/prettier': ['error', { tabWidth: 2, semi: true }],
+      'prettier/prettier': ['error', { tabWidth: 4, semi: true }],
 
       // Recommended rules from typescript-eslint
       ...tseslint.configs.recommended.rules
