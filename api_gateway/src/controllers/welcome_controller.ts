@@ -15,6 +15,23 @@ import {
 import { Request, Response, NextFunction } from "express";
 import { findTopic } from "../utils/topic_finder.js";
 
+/**
+ * The welcome controller is a special controller that is used to test the
+ * setup of the whole application. It is not a normal controller that handles
+ * user requests. Instead, it is used to send a message to each of the services
+ * and log the response from each of the services.
+ *
+ * The welcome controller is not meant to be used in production. It is only
+ * meant to be used during development to test the setup of the application.
+ *
+ * The welcome controller sends a message to each of the services and logs
+ * the response from each of the services. The response from each of the
+ * services is also sent back to the user in the response to the request.
+ *
+ * @param req - The Express request object.
+ * @param res - The Express response object.
+ * @param next - The Express next function.
+ */
 export async function welcomeController(
     req: Request,
     res: Response,

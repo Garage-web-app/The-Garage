@@ -1,6 +1,11 @@
 import { getClient } from "../mqtt/mqtt_client.js";
 import mqtt from "mqtt";
 
+/**
+ * Subscribe to the given MQTT topics.
+ * @param client - The MQTT client to use to subscribe.
+ * @param topics - The MQTT topics to subscribe to.
+ */
 export async function subscribeToTopics(
     client: mqtt.MqttClient,
     topics: string[],
@@ -9,6 +14,11 @@ export async function subscribeToTopics(
         await subscribeToTopic(client, topic);
     }
 }
+/**
+ * Unsubscribe from the given MQTT topics.
+ * @param client - The MQTT client to use to unsubscribe.
+ * @param topics - The MQTT topics to unsubscribe from.
+ */
 
 export async function unsubscribeFromTopics(
     client: mqtt.MqttClient,
@@ -19,6 +29,11 @@ export async function unsubscribeFromTopics(
     }
 }
 
+/**
+ * Subscribe to the given MQTT topic.
+ * @param client - The MQTT client to use to subscribe.
+ * @param topic - The MQTT topic to subscribe to.
+ */
 export async function subscribeToTopic(
     client: mqtt.MqttClient,
     topic: string,
@@ -31,6 +46,11 @@ export async function subscribeToTopic(
     }
 }
 
+/**
+ * Unsubscribe from the given MQTT topic.
+ * @param client - The MQTT client to use to unsubscribe.
+ * @param topic - The MQTT topic to unsubscribe from.
+ */
 export async function unsubscribeFromTopic(
     client: mqtt.MqttClient,
     topic: string,
@@ -43,30 +63,50 @@ export async function unsubscribeFromTopic(
     }
 }
 
+/**
+ * Subscribe to the given MQTT topics.
+ * @param topics - The list of MQTT topics to subscribe to.
+ */
 export async function runSubscriptions(topics: string[]): Promise<void> {
     const client: mqtt.MqttClient = await getClient();
     await subscribeToTopics(client, topics);
 }
 
+/**
+ * Given a list of MQTT message handlers, subscribe to the topics
+ * and dispatch messages to the corresponding handlers.
+ *
+ * @param handlers - An array of objects mapping topic names to
+ *                   functions that take a parsed MQTT message and
+ *                   an MQTT client as arguments.
+ */
 export async function dispatchMessages(
     handlers: Handler[],
     topics: string[],
 ): Promise<void> {
+    // Get the client
     const client: mqtt.MqttClient = await getClient();
-    const handlerTopics: Set<string> = new Set<string>();
+    const tpicsSet = new Set<string>(topics);
+    // Create a map of topics and their corresponding handlers
     const topicHandlerMap: Map<string, MQTTHandler> = new Map<
         string,
         MQTTHandler
     >();
 
+    // Loop through the handlers and add them to the map
     for (const handler of handlers) {
         for (const [topic, fn] of Object.entries(handler)) {
-            handlerTopics.add(topic);
             topicHandlerMap.set(topic, fn);
         }
     }
 
+    // Set up the message handler. Based on the topic, call the corresponding handler
+    // If the handler for a topic is not found, print a message
     client.on("message", async (topic: string, message: Buffer) => {
+        // Check if the topic is subscribed
+        if (!tpicsSet.has(topic)) {
+            throw new Error(`Topic ${topic} is not subscribed`);
+        }
         const fn = topicHandlerMap.get(topic);
         if (fn) {
             const data = JSON.parse(message.toString());

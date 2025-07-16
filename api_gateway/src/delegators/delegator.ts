@@ -1,5 +1,12 @@
 import mqtt from "mqtt";
 
+/**
+ * Publish a message to the specified MQTT topic.
+ * @param client - The MQTT client to use for publishing.
+ * @param topic - The MQTT topic to publish to.
+ * @param message - The message to publish.
+ * @throws {Error} If the message cannot be published.
+ */
 export async function publishToTopic(
     client: mqtt.MqttClient,
     topic: string,
@@ -13,6 +20,13 @@ export async function publishToTopic(
     }
 }
 
+/**
+ * Publish a message to multiple MQTT topics.
+ * @param client - The MQTT client to use for publishing.
+ * @param topics - The MQTT topics to publish to.
+ * @param message - The message to publish.
+ * @throws {Error} If the message cannot be published.
+ */
 export async function publishToTopics(
     client: mqtt.MqttClient,
     topics: string[],

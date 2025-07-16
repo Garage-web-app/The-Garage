@@ -32,7 +32,7 @@ if (env === "development") {
     app.use(morgan("dev"));
 }
 
-app.use("/", homeRouter);
+app.use("/api/v1/", homeRouter);
 
 app.use(errorHandler);
 

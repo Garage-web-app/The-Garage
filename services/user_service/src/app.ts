@@ -9,6 +9,20 @@ import { getClient } from "./mqtt/mqtt_client.js";
 import mqtt from "mqtt";
 import handlers from "./repliers/replier.js";
 
+/**
+ * The main entry point for the user service.
+ *
+ * This function initializes the service, by loading the configuration,
+ * setting up the MQTT client, subscribing to the relevant topics,
+ * and starting to dispatch messages.
+ *
+ * If any of the initialisation steps fail, the function will log the
+ * error message and terminate the process with exit code 1.
+ *
+ * If an error is encountered while running, the function will log the
+ * error message and attempt to unsubscribe from all topics before
+ * terminating the process with exit code 1.
+ */
 async function main(): Promise<void> {
     config();
     let client: mqtt.MqttClient;
@@ -17,7 +31,7 @@ async function main(): Promise<void> {
         client = await getClient();
     } catch (error) {
         console.log(error);
-        process.exit(0);
+        process.exit(1);
     }
 
     try {
@@ -31,8 +45,8 @@ async function main(): Promise<void> {
         console.log(error);
 
         await unsubscribeFromTopics(client, userTopics);
-        process.exit(0);
+        process.exit(1);
     }
 }
 
-main();
+await main();

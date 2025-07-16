@@ -1,3 +1,10 @@
+/**
+ * Says hello to the message sender.
+ *
+ * @param {Record<string, unknown>} data Object with name and message properties
+ * @returns {Record<string, string | number | Record<string, string>>} Response object
+ * with status and message.
+ */
 export const sayHello = (
     data: Record<string, unknown>,
 ): Record<string, string | number | Record<string, string>> => {

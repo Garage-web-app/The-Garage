@@ -7,4 +7,10 @@ declare global {
     ) => Promise<void>;
 
     type Handler = Record<string, MQTTHandler>;
+    interface Report {
+        reporter: string;
+        reported: string;
+        timeStamp: Date;
+        discription: [String];
+    }
 }

@@ -4,8 +4,10 @@ import { type Server, type Socket } from "net";
 import { config } from "dotenv";
 import RedisPersistence from "aedes-persistence-redis";
 
+// Load environment variables
 config();
 
+// Get the MQTT broker details
 const rawPort: string = process.env.BROKER_PORT || "1883";
 const host: string = process.env.BROKER_HOST || "127.0.0.1";
 

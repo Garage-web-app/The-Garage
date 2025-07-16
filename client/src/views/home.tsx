@@ -1,6 +1,14 @@
 import { useState } from "react";
 import type { JSX } from "react";
 
+/**
+ * The home page component.
+ *
+ * This component, for now, displays a counter that can be incremented with a button.
+ * The real home page will be implemented in the future.
+ *
+ * @returns The JSX element representing the home page.
+ */
 export default function Home(): JSX.Element {
     const [count, setCount] = useState(0);
 
