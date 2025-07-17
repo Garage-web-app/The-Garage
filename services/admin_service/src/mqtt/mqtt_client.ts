@@ -12,25 +12,18 @@ let client: mqtt.MqttClient | null = null;
  * @returns {Promise<mqtt.MqttClient>}
  */
 export async function getClient(): Promise<mqtt.MqttClient> {
-    // Get the MQTT broker details
-    const rawMqttPort: string | undefined = process.env.BROKER_PORT;
-    const mqttHost: string | undefined = process.env.BROKER_HOST;
+    // Get the MQTT broker URI
+    const brokerURI: string | undefined = process.env.BROKER_URI;
     const mqttReconTries: number = 5;
 
-    // Validate the MQTT broker details
-    if (!rawMqttPort || isNaN(parseInt(rawMqttPort))) {
-        throw new Error("BROKER_PORT is not a number");
+    // If BROKER_URI is not defined, throw an error
+    if (!brokerURI) {
+        throw new Error("BROKER_URI is not defined");
     }
-
-    if (!mqttHost) {
-        throw new Error("BROKER_HOST is not defined");
-    }
-
-    const mqttPort: number = parseInt(rawMqttPort);
 
     // If the client doesn't exist yet, create and connect to the MQTT broker (singelton pattern)
     if (!client) {
-        client = await connectWithRetry(mqttReconTries, mqttHost, mqttPort);
+        client = await connectWithRetry(mqttReconTries, brokerURI);
     }
     return client;
 }
@@ -40,8 +33,7 @@ export async function getClient(): Promise<mqtt.MqttClient> {
  * maximum number of attempts is reached, an error is thrown.
  *
  * @param {number} numOfAttempts - The number of connection attempts
- * @param {string} host - The host name of the MQTT broker
- * @param {number} port - The port of the MQTT broker
+ * @param {string} brokerURI - The MQTT broker URI
  *
  * @returns {Promise<mqtt.MqttClient>}
  *
@@ -49,15 +41,12 @@ export async function getClient(): Promise<mqtt.MqttClient> {
  */
 export async function connectWithRetry(
     numOfAttempts: number,
-    host: string,
-    port: number,
+    brokerURI: string,
 ): Promise<mqtt.MqttClient> {
-    const url = `mqtt://${host}:${port}`;
-
     // Attempt to connect to the MQTT broker numOfAttempts times
     for (let attempt = 1; attempt <= numOfAttempts; attempt++) {
         try {
-            const client = await mqtt.connectAsync(url);
+            const client = await mqtt.connectAsync(brokerURI);
             console.log("Connected to MQTT broker");
             return client;
         } catch (err) {

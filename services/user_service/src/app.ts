@@ -8,6 +8,7 @@ import { userTopics } from "./mqtt/topics.js";
 import { getClient } from "./mqtt/mqtt_client.js";
 import mqtt from "mqtt";
 import handlers from "./repliers/replier.js";
+import connectToDatabase from "./utils/database_connection.js";
 
 /**
  * The main entry point for the user service.
@@ -24,9 +25,17 @@ import handlers from "./repliers/replier.js";
  * terminating the process with exit code 1.
  */
 async function main(): Promise<void> {
-    config();
     let client: mqtt.MqttClient;
 
+    // If we are in test mode, load the .env.test file
+    // Otherwise, load the .env file
+    if (process.env.NODE_ENV === "test") {
+        config({ path: "../.env.test" });
+    } else {
+        config();
+    }
+
+    // Connect to the MQTT broker
     try {
         client = await getClient();
     } catch (error) {
@@ -34,8 +43,18 @@ async function main(): Promise<void> {
         process.exit(1);
     }
 
+    // Connect to the database
+    try {
+        await connectToDatabase();
+    } catch (error) {
+        console.log(error);
+        process.exit(1);
+    }
+
+    // Subscribe to the MQTT topics and handle messages
     try {
         await runSubscriptions(userTopics);
+        console.log("Subscribed to MQTT topics");
         await dispatchMessages(handlers, userTopics);
     } catch (error) {
         if (error instanceof Error) {
@@ -44,6 +63,7 @@ async function main(): Promise<void> {
 
         console.log(error);
 
+        // Unsubscribe from all MQTT topics before exiting
         await unsubscribeFromTopics(client, userTopics);
         process.exit(1);
     }

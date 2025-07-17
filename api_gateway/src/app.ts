@@ -6,36 +6,47 @@ import morgan from "morgan";
 import { router as homeRouter } from "./routers/home_router.js";
 import errorHandler from "./utils/error_handler.js";
 
+// Load environment variables
 config();
 
+// Get the gateway port and environment
 const rawPort: string | undefined = process.env.GATEWAY_PORT;
 const env: string | undefined = process.env.NODE_ENV;
 
+// If GATEWAY_PORT is not a number, throw an error
 if (!rawPort || isNaN(parseInt(rawPort))) {
     throw new Error("GATEWAY_PORT is not a number");
 }
 
+// If NODE_ENV is not defined, throw an error
 if (!env) {
     throw new Error("NODE_ENV is not defined");
 }
 
+// Convert GATEWAY_PORT to a number
 const port: number = parseInt(rawPort);
 
+// Create an Express app
 const app: Express = express();
 
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+// Middlewares
+app.use(cors()); // Enable CORS which allows cross-origin requests. For now we allow all origins
+app.use(express.json()); // Parse JSON which parses the body of the request to JSON
+app.use(cookieParser()); // Parse cookies which allows us to access cookies by using req.cookies
 
-if (env === "development") {
+// If the environment is development or test, use morgan
+if (env === "development" || env === "test") {
+    // Morgan is a logger that logs requests to the console
     app.use(morgan("dev"));
 }
 
-app.use("/api/v1/", homeRouter);
+// Routers
+app.use("/api/v1/", homeRouter); // Use the home router for the root route
 
+// Error handler which is called for 500 status codes
 app.use(errorHandler);
 
+// Start the server
 app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+    console.log(`Gateway running on port ${port}`);
 });

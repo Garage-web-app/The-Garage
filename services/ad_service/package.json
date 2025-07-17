@@ -4,25 +4,26 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "dev": "npm run lint && concurrently 'npx tsc --watch' 'nodemon -q dist/app.js'",
+    "dev": "npm run lint && concurrently --kill-others 'npx tsc --watch' 'nodemon -q dist/app.js'",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "build": "npm run lint && npx tsc",
-    "start": "npm run build && node dist/app.js"
+    "start": "npm run build && node dist/app.js",
+    "dropdb": "cross-env NODE_ENV=test ts-node src/utils/dropdb.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "concurrently": "^9.2.0",
     "dotenv": "^17.0.1",
     "mongoose": "^8.16.1",
     "mqtt": "^5.13.1"
   },
   "devDependencies": {
     "@types/node": "^24.0.10",
+    "concurrently": "^9.2.0",
     "cross-env": "^7.0.3",
     "eslint": "^9.30.1",
     "eslint-plugin-prettier": "^5.5.1",

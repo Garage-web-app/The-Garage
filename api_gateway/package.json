@@ -5,11 +5,12 @@
   "main": "app.js",
   "scripts": {
     "dev": "npm run lint && concurrently 'npx tsc --watch' 'nodemon -q dist/app.js'",
-    "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "build": "npm run lint && npx tsc",
-    "start": "npm run build && node dist/app.js"
+    "start": "npm run build && node dist/app.js",
+    "test": "cross-env NODE_ENV=test start-server-and-test start http://localhost:3000/api/v1 newman",
+    "newman": "newman run ./src/tests/The_Garage.postman_collection.json"
   },
   "keywords": [],
   "author": "",
@@ -37,6 +38,7 @@
     "newman": "^6.2.1",
     "nodemon": "^3.1.10",
     "prettier": "^3.6.2",
+    "start-server-and-test": "^2.0.12",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.35.1"
