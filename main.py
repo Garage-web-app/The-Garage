@@ -634,6 +634,7 @@ def main():
 if __name__ == "__main__":
     try:
         main()
+        # Wait for the user to press enter to shut down the processes
         input("\nAll services are running. Press Enter to shut them down and exit.")
 
         cleanup_processes(processes_handles, mongo_paths)
