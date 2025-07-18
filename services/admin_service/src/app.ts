@@ -30,7 +30,7 @@ async function main(): Promise<void> {
     // If we are in test mode, load the .env.test file
     // Otherwise, load the .env file
     if (process.env.NODE_ENV === "test") {
-        config({ path: "../.env.test" });
+        config({ path: "./.env.test" });
     } else {
         config();
     }

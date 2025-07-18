@@ -596,7 +596,7 @@ def main():
                 exit(1)
 
             # If the tests passed, exit with a zero exit code
-            print("\n All tests passed.")
+            print("\nAll tests passed.")
             # Always terminate the processes before exiting
             cleanup_processes(processes_handles, mongo_paths)
             exit(0)
