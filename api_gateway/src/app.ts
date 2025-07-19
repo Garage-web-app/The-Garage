@@ -12,6 +12,12 @@ config();
 // Get the gateway port and environment
 const rawPort: string | undefined = process.env.GATEWAY_PORT;
 const env: string | undefined = process.env.NODE_ENV;
+const host: string | undefined = process.env.GATEWAY_HOST;
+
+// If GATEWAY_HOST is not defined, throw an error
+if (!host) {
+    throw new Error("GATEWAY_HOST is not defined");
+}
 
 // If GATEWAY_PORT is not a number, throw an error
 if (!rawPort || isNaN(parseInt(rawPort))) {
@@ -47,6 +53,6 @@ app.use("/api/v1/", homeRouter); // Use the home router for the root route
 app.use(errorHandler);
 
 // Start the server
-app.listen(port, () => {
+app.listen(port, host, () => {
     console.log(`Gateway running on port ${port}`);
 });
