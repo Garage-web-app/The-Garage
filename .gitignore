@@ -5,3 +5,4 @@
 **.DS_Store
 **settings.json
 **/logs
+**/.vscode
