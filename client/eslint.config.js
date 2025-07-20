@@ -25,7 +25,11 @@ export default tseslint.config([
       prettier: prettierPlugin
     },
       rules: {
-        'prettier/prettier': ['error', { tabWidth: 4, semi: true }],
+        'linebreak-style': 'off',
+        'no-var': 'error',
+        'prefer-const': 'error', 
+        // Prettier integration
+        'prettier/prettier': ['error', { tabWidth: 4, semi: true, endOfLine: 'auto' }],
       }
   },
 ])

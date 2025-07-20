@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "dev": "npm run lint && concurrently \"npx tsc --watch\" \"nodemon -q dist/app.js\"",
+    "dev": "npm run lint && npm run build && concurrently --kill-others \"npx tsc --watch\" \"nodemon -q dist/app.js\"",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "build": "npm run lint && npx tsc",

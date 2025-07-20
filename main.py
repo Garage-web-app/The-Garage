@@ -210,7 +210,7 @@ def spawn_services(services: list, services_to_exclude: list, env_file_name: str
         cwd = f"{os.path.join(services_root, service)}"
         
         # Command to run
-        command = "npm run dev"
+        command = "npm i && npm run dev"
         
         # The service i slong running. It will be in the background
         try:
@@ -261,7 +261,7 @@ def spawn_broker(broker_path: str, logs_dir: str, env_file_name: str):
     # Directory to run the npm command in
     cwd = f"{broker_path}"
     # Command to run
-    command = "npm run dev"
+    command = "npm i && npm run dev"
 
     print("Spawning broker")
 
@@ -316,9 +316,9 @@ def spawn_gateway(gateway_path: str, logs_dir: str, env_file_name: str, is_testi
     cwd = f"{gateway_path}"
     # Command to run. If is_testing is true, run the test command
     if is_testing:
-        command = "npm run test"
+        command = "npm i && npm run test"
     else:
-        command = "npm run dev"
+        command = "npm i && npm run dev"
 
     # The gateway is long running. It will be in the background
     try:
@@ -466,7 +466,7 @@ def main():
     BROKER_GREEN_FLAG = f"Broker running on port"
     SERVICE_GREEN_FLAG = f"Subscribed to MQTT topics"
     GATEWAY_GREEN_FLAG = f"Gateway running on port"
-    WAITING_TIMEOUT = 30
+    WAITING_TIMEOUT = 60
 
     # Create the argument parser for parsing the arguments passed to the script
     parser = argparse.ArgumentParser()
@@ -520,7 +520,7 @@ def main():
             broker_process_tuple = spawn_broker(broker_path, logs_dir, env_file_name)
             processes_handles.append(broker_process_tuple)
             # Wait for the broker to give the green flag
-            wait_for_green_flag("broker", logs_dir, 30, BROKER_GREEN_FLAG)
+            wait_for_green_flag("broker", logs_dir, WAITING_TIMEOUT, BROKER_GREEN_FLAG)
 
             # After broker gave the green flag, spawn the services
             services_processes_tuples = spawn_services(services, [], env_file_name, services_root, logs_dir)
@@ -551,7 +551,7 @@ def main():
             exit(0)
         except Exception as e:
             cleanup_processes(processes_handles)
-            print("Failed to spawn services or gateway or broke or to clear databases.")
+            print("Failed to spawn services or gateway or broker or to clear databases.")
             print(e)
             exit(1)
     else:
@@ -560,7 +560,7 @@ def main():
             broker_process_tuple = spawn_broker(broker_path, logs_dir, env_file_name)
             processes_handles.append(broker_process_tuple)
             # Wait for the broker to give the green flag
-            wait_for_green_flag("broker", logs_dir, 30, BROKER_GREEN_FLAG)
+            wait_for_green_flag("broker", logs_dir, WAITING_TIMEOUT, BROKER_GREEN_FLAG)
 
             # After broker gave the green flag, spawn the services
             services_processes_tuples = spawn_services(services, [], env_file_name, services_root, logs_dir)

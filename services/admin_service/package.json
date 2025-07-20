@@ -1,10 +1,10 @@
 {
-  "name": "ad_service",
+  "name": "admin_service",
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
   "scripts": {
-    "dev": "npm run lint && concurrently \"npx tsc --watch\" \"nodemon -q dist/app.js\"",
+    "dev": "npm run lint && npm run build && concurrently --kill-others \"npx tsc --watch\" \"nodemon -q dist/app.js\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
