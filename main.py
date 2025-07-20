@@ -32,7 +32,7 @@ def clear_databases(services: list, services_to_exclude: list, services_root: st
             
             try:
                 subprocess.run(
-                    shlex.split(cmd),
+                    cmd,
                     cwd=f"{os.path.join(services_root, service)}",
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
@@ -218,7 +218,7 @@ def spawn_services(services: list, services_to_exclude: list, env_file_name: str
             out_file = open(out_log_file, "w")
             err_file = open(err_log_file, "w")
 
-            process = subprocess.Popen(shlex.split(command), cwd=cwd, env=env_copy, stdout=out_file, stderr=err_file)
+            process = subprocess.Popen(command, cwd=cwd, env=env_copy, stdout=out_file, stderr=err_file, shell=True)
             print(f"{service} spawned. Check the log files for errors.")
 
             processes.append((process, out_file, err_file, service))
@@ -270,8 +270,7 @@ def spawn_broker(broker_path: str, logs_dir: str, env_file_name: str):
         # Save the output and errors to the log files
         out_file = open(out_log_file, "w")
         err_file = open(err_log_file, "w")
-
-        process = subprocess.Popen(shlex.split(command), cwd=cwd, env=env_copy, stdout=out_file, stderr=err_file)
+        process = subprocess.Popen(command, cwd=cwd, env=env_copy, stdout=out_file, stderr=err_file, shell=True)
         print("Broker spawned. Check the log files for errors.")
 
         return (process, out_file, err_file, "broker")
@@ -327,7 +326,7 @@ def spawn_gateway(gateway_path: str, logs_dir: str, env_file_name: str, is_testi
         out_file = open(out_log_file, "w")
         err_file = open(err_log_file, "w")
 
-        process = subprocess.Popen(shlex.split(command), cwd=cwd, env=env_copy, stdout=out_file, stderr=err_file)
+        process = subprocess.Popen(command, cwd=cwd, env=env_copy, stdout=out_file, stderr=err_file, shell=True)
         print("Gateway spawned. Check the log files for errors.")
 
         return (process, out_file, err_file, "gateway")
@@ -419,7 +418,7 @@ def create_mongo_instances(services: list, services_to_exclude: list, env_file_n
                 raise e
 
             # Mongo instance creation command
-            mongo_creation_cmd = f"mongod --port {port} --dbpath {mongo_path} --logpath {mongo_log_path}"
+            mongo_creation_cmd = f"mongod --port {port} --dbpath {mongo_path} --logpath {mongo_log_path} --logappend"
             
             # Use subprocess to run the command
             try:
@@ -428,7 +427,7 @@ def create_mongo_instances(services: list, services_to_exclude: list, env_file_n
                 err_file = open(err_log_file, "w")
 
                 # Spawn the databases and save the process, stdout and stderr as tuple. This will be used later to terminate the processes
-                process = subprocess.Popen(shlex.split(mongo_creation_cmd), stdout=out_file, stderr=err_file)
+                process = subprocess.Popen(mongo_creation_cmd, stdout=out_file, stderr=err_file, shell=True)
                 # Add the process, stdout and stderr to the list
                 mongo_processes.append((process, out_file, err_file, f"{database_name}_database"))
             # If the log files could not be created
