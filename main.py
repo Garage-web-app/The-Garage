@@ -4,10 +4,8 @@ import subprocess
 import os
 import dotenv
 import re
-import shutil
 import time
 import psutil
-import errno
 
 # Gather up the processes tuples. Each tuple is (process, stdout file, stderr file) we will use this later to terminate the processes
 processes_handles = []
