@@ -11,43 +11,6 @@ import errno
 
 # Gather up the processes tuples. Each tuple is (process, stdout file, stderr file) we will use this later to terminate the processes
 processes_handles = []
-# Directory to save the log files to
-los_dir = f"{os.path.join(os.path.dirname(os.path.realpath(__file__)), 'logs')}"
-# Path to log file created when creating the mongo instances
-mongo_creation_log_file_path_out = f"{os.path.join(los_dir, 'create_mongo_instances.out')}"
-mongo_creation_log_file_path_err = f"{os.path.join(los_dir, 'create_mongo_instances.err')}"
-
-def is_process_alive(pid: int) -> bool:
-    """
-    Check if a process with a given pid is alive.
-
-    Parameters
-    ----------
-    pid : int
-        The pid of the process to check
-
-    Returns
-    -------
-    bool
-        True if the process is alive, False if it is not. If the process exists but
-        you have no permission to signal it, True will be returned.
-    """
-    try:
-        # Signal 0 does not kill the process
-        os.kill(pid, 0)
-    except OSError as e:
-        if e.errno == errno.ESRCH:
-            # No such process
-            return False
-        elif e.errno == errno.EPERM:
-            # Process exists but you have no permission to signal it
-            return True
-        else:
-            # Unexpected error
-            raise e
-    else:
-        # No exception means the process exists
-        return True
 
 def clear_databases(services: list, services_to_exclude: list, services_root: str):
     """
@@ -66,6 +29,7 @@ def clear_databases(services: list, services_to_exclude: list, services_root: st
     for service in services:
         if service not in services_to_exclude:
 
+            # This command runs the JavaScript script to clear the database
             cmd = "npm run dropdb"
             
             try:
@@ -124,7 +88,7 @@ def kill_process_tree(pid, grace_period=3):
         print(f"Failed to kill process tree for PID {pid}: {e}")
         raise e
 
-def cleanup_processes(processes: list, mongo_creation_log_file_path_out: str, terminate_mongo_instances: bool = True):
+def cleanup_processes(processes: list):
     """
     Clean up processes and MongoDB instances spawned by this script.
     
@@ -143,68 +107,21 @@ def cleanup_processes(processes: list, mongo_creation_log_file_path_out: str, te
     print("\nCleaning up processes...")
 
     # Terminate the processes
-    for process, out_file, err_file in processes:
+    for process, out_file, err_file, name in processes:
         try:
-            print(f"Terminating process with PID {process.pid}...")
+            print(f"Terminating {name} process with PID {process.pid}...")
             if process.poll() is None:
                 kill_process_tree(process.pid)
-                print(f"Successfully terminated process with PID {process.pid}")
+                print(f"Successfully terminated {name} process with PID {process.pid}")
             else:
-                print(f"Process with PID {process.pid} is already terminated")
+                print(f"Process for {name} with PID {process.pid} is already terminated")
         except Exception as e:
-            print(f"Failed to terminate process with PID {process.pid}:\n{e}")
+            print(f"Failed to terminate {name} process with PID {process.pid}:\n{e}")
         finally:
             out_file.close()
             err_file.close()
 
-    # Terminate the mongo instances
-    if terminate_mongo_instances:
-        kill_mongo_instances(mongo_creation_log_file_path_out)
     print("Cleanup complete.")
-
-def kill_mongo_instances(mongo_creation_log_file_path_out: str):
-    """
-    Kill the mongo instances whose pids are written to the log file
-    The string containing the pids is of the following format:
-    forked process: <pid>
-    
-    Parameters
-    ----------
-    mongo_creation_log_file_path_out : str
-        Path to the log file
-    
-    Raises
-    ------
-    Exception
-        If there is an error reading the log file or killing the mongo instances
-    """
-
-    # List of pids
-    mongo_pids = []
-
-    try:
-        # Read the log file and find the pids
-        with open(mongo_creation_log_file_path_out, "r") as f:
-            for line in f:
-                match = re.search(r"forked process: (\d+)", line)
-                if match:
-                    mongo_pids.append(int(match.group(1)))
-    except Exception as e:
-        print(f"Failed to read mongo creation log file:\n{e}")
-        raise e
-
-    try:
-        print("Killing mongo instances...")
-        for pid in mongo_pids:
-            if is_process_alive(pid):
-                print(f"Killing mongo instance with PID {pid}...")
-                kill_process_tree(pid)
-                print(f"Successfully killed mongo instance with PID {pid}")
-            else:
-                print(f"Mongo instance with PID {pid} is already terminated")
-    except Exception as e:
-        print(f"Failed to kill mongo instances:\n{e}")
-        raise e
 
 def wait_for_green_flag(component_name: str, logs_dir: str, timeOut: int, green_flag: str):
     """
@@ -306,7 +223,7 @@ def spawn_services(services: list, services_to_exclude: list, env_file_name: str
             process = subprocess.Popen(shlex.split(command), cwd=cwd, env=env_copy, stdout=out_file, stderr=err_file)
             print(f"{service} spawned. Check the log files for errors.")
 
-            processes.append((process, out_file, err_file))
+            processes.append((process, out_file, err_file, service))
         except Exception as e:
             out_file.close()
             err_file.close()
@@ -359,7 +276,7 @@ def spawn_broker(broker_path: str, logs_dir: str, env_file_name: str):
         process = subprocess.Popen(shlex.split(command), cwd=cwd, env=env_copy, stdout=out_file, stderr=err_file)
         print("Broker spawned. Check the log files for errors.")
 
-        return (process, out_file, err_file)
+        return (process, out_file, err_file, "broker")
     except Exception as e:
         out_file.close()
         err_file.close()
@@ -415,7 +332,7 @@ def spawn_gateway(gateway_path: str, logs_dir: str, env_file_name: str, is_testi
         process = subprocess.Popen(shlex.split(command), cwd=cwd, env=env_copy, stdout=out_file, stderr=err_file)
         print("Gateway spawned. Check the log files for errors.")
 
-        return (process, out_file, err_file)
+        return (process, out_file, err_file, "gateway")
     except Exception as e:
         out_file.close()
         err_file.close()
@@ -444,27 +361,13 @@ def create_mongo_instances(services: list, services_to_exclude: list, env_file_n
     -------
     list
         List of paths to the mongo instances
-    """
-    # Log files to save the output and errors to
-    out_log_file = mongo_creation_log_file_path_out
-    err_log_file = mongo_creation_log_file_path_err
-    
+    """ 
     # The base dir is where the mongo data will be stored
     # Please note that this is not the dir that mongo itself uses by default
     # as mongo uses ~/data/db
     mongo_base_path = f"{os.path.join(os.path.expanduser('~'), 'mongo_data')}"
 
-    # create the log files
-    try:
-        out_file = open(out_log_file, "w")
-        err_file = open(err_log_file, "w")
-    except Exception as e:
-        print("Failed to create log files")
-        raise e
-    
-    # Close the log files
-    out_file.close()
-    err_file.close()
+    mongo_processes = []
 
     # Create the base dir
     try:
@@ -488,13 +391,15 @@ def create_mongo_instances(services: list, services_to_exclude: list, env_file_n
                 raise ValueError("DATABASE_URI is not defined in the .env file")
 
             # Get the port from the MONGO_URI
-            match = re.search(r"mongodb://localhost:(\d+)", mongo_uri)
+            match = re.search(r"mongodb://.*:(\d+)", mongo_uri)
             if not match:
                 raise ValueError(f"Invalid DATABASE_URI format in {service}")
             port = match.group(1)
 
+            # Get the database name from the MONGO_URI
             sliced_mongo_uri = mongo_uri.split("/")
 
+            # The last element in the sliced list is the database name e.g. mongodb://localhost:27017/test -> test is the database name
             database_name = sliced_mongo_uri[-1]
             
             # Create the path for the mongo instance for the service
@@ -502,6 +407,10 @@ def create_mongo_instances(services: list, services_to_exclude: list, env_file_n
 
             # Create the path for the mongo log for the service
             mongo_log_path = f"{os.path.join(mongo_base_path, f"{database_name}.log")}"
+
+            # Log files to save the output and errors to
+            out_log_file = f"{os.path.join(logs_dir, f"{database_name}_database.out")}"
+            err_log_file = f"{os.path.join(logs_dir, f"{database_name}_database.err")}"
             
             # Create the mongo dir for the service
             try:
@@ -512,27 +421,37 @@ def create_mongo_instances(services: list, services_to_exclude: list, env_file_n
                 raise e
 
             # Mongo instance creation command
-            mongo_creation_cmd = f"mongod --port {port} --dbpath {mongo_path} --logpath {mongo_log_path} --fork"
+            mongo_creation_cmd = f"mongod --port {port} --dbpath {mongo_path} --logpath {mongo_log_path}"
             
             # Use subprocess to run the command
             try:
-                # Create the log files and save the output to it
-                with open(out_log_file, "a") as f, open(err_log_file, "a") as e:
-                    # Run the instance creation command
-                    subprocess.run(shlex.split(mongo_creation_cmd), stdout=f, stderr=e)
+                # Save the output and errors to the log files
+                out_file = open(out_log_file, "w")
+                err_file = open(err_log_file, "w")
+
+                # Spawn the databases and save the process, stdout and stderr as tuple. This will be used later to terminate the processes
+                process = subprocess.Popen(shlex.split(mongo_creation_cmd), stdout=out_file, stderr=err_file)
+                # Add the process, stdout and stderr to the list
+                mongo_processes.append((process, out_file, err_file, f"{database_name}_database"))
+            # If the log files could not be created
             except FileNotFoundError as e:
-                print("Failed to create log file")
+                print("Failed to create log files")
                 raise e
+            # If the mongo instance could not be created
             except Exception as e:
-                # kill the mongo instance
-                kill_mongo_instances(out_log_file)
+                # Close the log files
+                out_file.close()
+                err_file.close()
+                # Clean up the processes that were created
+                cleanup_processes(mongo_processes)
                 print(f"Failed to create mongo instance for {service}")
                 raise e
             
             print(f"Mongo instance created for {service} on port {port}. check {out_log_file}", 
                   "for logs.\n")
-
-    return out_log_file
+            
+    # Return the list of mongo instaces processes which will be used to terminate the processes later on
+    return mongo_processes
 
 def main():
     """
@@ -556,7 +475,6 @@ def main():
     parser = argparse.ArgumentParser()
     # Add the arguments
     parser.add_argument("--test", "-t", action="store_true", help="Run Postman tests")
-    parser.add_argument("--create_mongo_instances", "-c", action="store_true", help="Create the mongo instances")
 
     # Get the root dir of the services
     services_root = os.path.join(os.path.dirname(os.path.realpath(__file__)), "services")
@@ -588,13 +506,12 @@ def main():
     if args.test:
         env_file_name = ".env.test"
 
-    # If the create_mongo_instances argument is passed, create the mongo instances
-    if args.create_mongo_instances:
-        try:      
-            mongo_creation_log_file_path_out = create_mongo_instances(services, ["notification_service"], env_file_name, services_root, logs_dir)
-        except Exception as e:
-            print("Failed to create mongo instances")
-            print(e)
+    try:      
+        mongo_processes = create_mongo_instances(services, ["notification_service"], env_file_name, services_root, logs_dir)
+        processes_handles.extend(mongo_processes)
+    except Exception as e:
+        print(f"Failed to create mongo instances:\n{e}")
+        exit(1)
 
     # If the test argument is passed we run gateway in test mode, otherwise we run it in dev mode
     if args.test:
@@ -614,8 +531,8 @@ def main():
             # Wait for the services to give the green flag
             for service in services:
                 wait_for_green_flag(service, logs_dir, WAITING_TIMEOUT, SERVICE_GREEN_FLAG)
-            # Spawn the gateway after the services gave the green flag
 
+            # Spawn the gateway after the services gave the green flag
             gateway_process_tuple = spawn_gateway(gateway_path, logs_dir, env_file_name, True)
             processes_handles.append(gateway_process_tuple)
             # Wait for the gateway to give the green flag
@@ -627,16 +544,16 @@ def main():
             if gateway_exit_code != 0:
                 print(f"Tests failed with exit code {gateway_exit_code}. Look at the logs for more information.")
                 # Always terminate the processes before exiting
-                cleanup_processes(processes_handles, mongo_creation_log_file_path_out)
+                cleanup_processes(processes_handles)
                 exit(1)
 
             # If the tests passed, exit with a zero exit code
             print("\nAll tests passed.")
             # Always terminate the processes before exiting
-            cleanup_processes(processes_handles, mongo_creation_log_file_path_out)
+            cleanup_processes(processes_handles)
             exit(0)
         except Exception as e:
-            cleanup_processes(processes_handles, mongo_creation_log_file_path_out)
+            cleanup_processes(processes_handles)
             print("Failed to spawn services or gateway or broke or to clear databases.")
             print(e)
             exit(1)
@@ -654,14 +571,14 @@ def main():
             # Wait for the services to give the green flag
             for service in services:
                 wait_for_green_flag(service, logs_dir, WAITING_TIMEOUT, SERVICE_GREEN_FLAG)
-            # Spawn the gateway after the services gave the green flag
 
+            # Spawn the gateway after the services gave the green flag
             gateway_process_tuple = spawn_gateway(gateway_path, logs_dir, env_file_name, False)
             processes_handles.append(gateway_process_tuple)
             # Wait for the gateway to give the green flag
             wait_for_green_flag("gateway", logs_dir, WAITING_TIMEOUT, GATEWAY_GREEN_FLAG)
         except Exception as e:
-            cleanup_processes(processes_handles, mongo_creation_log_file_path_out)
+            cleanup_processes(processes_handles)
             print("Failed to spawn services or gateway or broker")
             print(e)
             exit(1)
@@ -669,25 +586,20 @@ def main():
 if __name__ == "__main__":
     try:
         main()
+
         # Wait for the user to press enter to shut down the processes
         input("\nAll services are running. Press Enter to shut them down and exit.")
 
-        terminate_mongo_instances = input("Do you want to terminate the mongo instances? (y/n): ")
-        if terminate_mongo_instances == "y":
-            terminate_mongo_instances = True
-        else:
-            terminate_mongo_instances = False
-
-        cleanup_processes(processes_handles, mongo_creation_log_file_path_out, terminate_mongo_instances)
+        cleanup_processes(processes_handles)
         exit(0)
     except KeyboardInterrupt:
         print("Interrupted by user. Cleaning up processes...")
 
-        cleanup_processes(processes_handles, mongo_creation_log_file_path_out)
+        cleanup_processes(processes_handles)
         exit(0)
     except Exception as e:
         print("Failed to run main")
         print(e)
 
-        cleanup_processes(processes_handles, mongo_creation_log_file_path_out)
+        cleanup_processes(processes_handles)
         exit(1)
