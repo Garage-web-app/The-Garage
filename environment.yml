@@ -1,0 +1,8 @@
+name: Garage
+channels:
+  - https://repo.anaconda.com/pkgs/main
+  - https://repo.anaconda.com/pkgs/r
+dependencies:
+  - python=3.13.5
+  - python-dotenv=1.1.0
+  - psutil=5.9.0

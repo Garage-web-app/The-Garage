@@ -1,0 +1,65 @@
+{
+	"info": {
+		"_postman_id": "30991739-5023-4608-baf2-846b995dfda0",
+		"name": "The_Garage",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "28868794"
+	},
+	"item": [
+		{
+			"name": "Get welcome endpoint",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const res = pm.response.json();",
+							"",
+							"// Check if the response status code is 200",
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"// Check if the response body contains the expected data",
+							"pm.test('Response body contains expected data', function () {",
+							"    pm.expect(res.user).to.have.property(\"name\")",
+							"    pm.expect(res.user.name).to.eql(\"User Service\")",
+							"    pm.expect(res.admin).to.have.property(\"name\")",
+							"    pm.expect(res.admin.name).to.eql(\"Admin Service\")",
+							"    pm.expect(res.ad).to.have.property(\"name\")",
+							"    pm.expect(res.ad.name).to.eql(\"Ad Service\")",
+							"    pm.expect(res.chat).to.have.property(\"name\")",
+							"    pm.expect(res.chat.name).to.eql(\"Chat Service\")",
+							"    pm.expect(res.notification).to.have.property(\"name\")",
+							"    pm.expect(res.notification.name).to.eql(\"Notification Service\")",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:3000/api/v1/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"v1",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
