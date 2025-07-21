@@ -29,7 +29,7 @@ export default tseslint.config([
         'no-var': 'error',
         'prefer-const': 'error', 
         // Prettier integration
-        'prettier/prettier': ['error', { tabWidth: 4, semi: true, endOfLine: 'auto' }],
+        'prettier/prettier': ['error', { tabWidth: 4, semi: true, endOfLine: 'auto', singleQuote: true }],
       }
   },
 ])

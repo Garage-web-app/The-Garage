@@ -1,4 +1,4 @@
-import mqtt from "mqtt";
+import mqtt from 'mqtt';
 
 /**
  * Subscribe to the given MQTT topics.
@@ -81,7 +81,7 @@ export function dispatchMessage(
 ): Promise<unknown> {
     return new Promise((resolve, reject) => {
         const timer = setTimeout(() => {
-            client.removeListener("message", handler);
+            client.removeListener('message', handler);
             reject(
                 new Error(`Timeout: No message received on ${message_topic}`),
             );
@@ -90,7 +90,7 @@ export function dispatchMessage(
         const handler = (topic: string, message: Buffer) => {
             if (topic === message_topic) {
                 clearTimeout(timer);
-                client.removeListener("message", handler);
+                client.removeListener('message', handler);
                 try {
                     const parsed = JSON.parse(message.toString());
                     resolve(parsed);
@@ -104,6 +104,6 @@ export function dispatchMessage(
             }
         };
 
-        client.on("message", handler);
+        client.on('message', handler);
     });
 }

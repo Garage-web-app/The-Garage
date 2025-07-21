@@ -1,4 +1,4 @@
-import mqtt from "mqtt";
+import mqtt from 'mqtt';
 
 let client: mqtt.MqttClient | null = null;
 
@@ -17,7 +17,7 @@ export async function getClient(): Promise<mqtt.MqttClient> {
 
     // If BROKER_URI is not defined, throw an error
     if (!brokerURI) {
-        throw new Error("BROKER_URI is not defined");
+        throw new Error('BROKER_URI is not defined');
     }
 
     // If the client doesn't exist yet, create and connect to the MQTT broker (singelton pattern)
@@ -46,7 +46,7 @@ export async function connectWithRetry(
     for (let attempt = 1; attempt <= numOfAttempts; attempt++) {
         try {
             const client = await mqtt.connectAsync(brokerURI);
-            console.log("Connected to MQTT broker");
+            console.log('Connected to MQTT broker');
             return client;
         } catch (err) {
             console.error(`Connection attempt ${attempt} failed:\n${err}`);
@@ -62,5 +62,5 @@ export async function connectWithRetry(
     }
 
     // This is unreachable but satisfies TypeScript
-    throw new Error("Unreachable");
+    throw new Error('Unreachable');
 }

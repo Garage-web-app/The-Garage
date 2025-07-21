@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction } from 'express';
 
 /**
  * A global error handler that catches all unhandled errors, logs them to the
@@ -16,5 +16,5 @@ export default function errorHandler(
     next: NextFunction,
 ) {
     console.error(err);
-    res.status(500).send("Internal Server Error");
+    res.status(500).send('Internal Server Error');
 }

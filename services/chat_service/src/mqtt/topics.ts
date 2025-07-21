@@ -1,1 +1,1 @@
-export const chatTopics: string[] = ["chat/test"];
+export const chatTopics: string[] = ['chat/test'];

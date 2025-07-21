@@ -1,4 +1,4 @@
-import { Schema, model, Types } from "mongoose";
+import { Schema, model, Types } from 'mongoose';
 
 const reportSchema = new Schema<Report>({
     reporter: {
@@ -22,5 +22,5 @@ const reportSchema = new Schema<Report>({
 
 reportSchema.index({ reporter: 1, timeStamp: 1 }, { unique: true });
 
-const ReportModel = model<Report>("Report", reportSchema);
+const ReportModel = model<Report>('Report', reportSchema);
 export default ReportModel;

@@ -1,5 +1,5 @@
-import { sayHello } from "../logic/welcome.js";
-import mqtt from "mqtt";
+import { sayHello } from '../logic/welcome.js';
+import mqtt from 'mqtt';
 
 /**
  * Publish a message to the specified MQTT topic.
@@ -31,7 +31,7 @@ export async function publishToTopic(
  * @param client - The MQTT client that received the message.
  */
 const welcomeHandler: Handler = {
-    "notification/test": async (
+    'notification/test': async (
         data: Record<string, unknown>,
         client: mqtt.MqttClient,
     ): Promise<void> => {
@@ -39,8 +39,8 @@ const welcomeHandler: Handler = {
 
         // check for the presence of a "replyTopic" property
         // if there is no "replyTopic" property, throw an error
-        if (!data.replyTopic || typeof data.replyTopic !== "string") {
-            throw new Error("No reply topic provided");
+        if (!data.replyTopic || typeof data.replyTopic !== 'string') {
+            throw new Error('No reply topic provided');
         }
 
         const replyTopic = data.replyTopic;

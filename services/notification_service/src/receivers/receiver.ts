@@ -1,5 +1,5 @@
-import { getClient } from "../mqtt/mqtt_client.js";
-import mqtt from "mqtt";
+import { getClient } from '../mqtt/mqtt_client.js';
+import mqtt from 'mqtt';
 
 /**
  * Subscribe to the given MQTT topics.
@@ -102,7 +102,7 @@ export async function dispatchMessages(
 
     // Set up the message handler. Based on the topic, call the corresponding handler
     // If the handler for a topic is not found, print a message
-    client.on("message", async (topic: string, message: Buffer) => {
+    client.on('message', async (topic: string, message: Buffer) => {
         // Check if the topic is subscribed
         if (!tpicsSet.has(topic)) {
             throw new Error(`Topic ${topic} is not subscribed`);

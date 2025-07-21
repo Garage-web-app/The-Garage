@@ -29,6 +29,8 @@ def clear_databases(services: list, services_to_exclude: list, services_root: st
 
             # This command runs the JavaScript script to clear the database
             cmd = "npm run dropdb"
+
+            print(f"{os.path.join(services_root, service)}")
             
             try:
                 subprocess.run(
@@ -36,7 +38,8 @@ def clear_databases(services: list, services_to_exclude: list, services_root: st
                     cwd=f"{os.path.join(services_root, service)}",
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
-                    check=True
+                    check=True,
+                    shell=True
                 )
 
                 print(f"Successfully cleared database for {service}")

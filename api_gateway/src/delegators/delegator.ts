@@ -1,4 +1,4 @@
-import mqtt from "mqtt";
+import mqtt from 'mqtt';
 
 /**
  * Publish a message to the specified MQTT topic.

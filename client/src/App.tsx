@@ -1,7 +1,7 @@
-import { type JSX } from "react";
-import "./App.css";
-import { RouterProvider } from "react-router-dom";
-import router from "./router";
+import { type JSX } from 'react';
+import './App.css';
+import { RouterProvider } from 'react-router-dom';
+import router from './router';
 
 /**
  * The main application component.

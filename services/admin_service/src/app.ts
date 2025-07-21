@@ -1,14 +1,14 @@
-import { config } from "dotenv";
+import { config } from 'dotenv';
 import {
     runSubscriptions,
     dispatchMessages,
     unsubscribeFromTopics,
-} from "./receivers/receiver.js";
-import { adminTopics } from "./mqtt/topics.js";
-import { getClient } from "./mqtt/mqtt_client.js";
-import mqtt from "mqtt";
-import handlers from "./repliers/replier.js";
-import connectToDatabase from "./utils/database_connection.js";
+} from './receivers/receiver.js';
+import { adminTopics } from './mqtt/topics.js';
+import { getClient } from './mqtt/mqtt_client.js';
+import mqtt from 'mqtt';
+import handlers from './repliers/replier.js';
+import connectToDatabase from './utils/database_connection.js';
 
 /**
  * The main entry point for the user service.
@@ -29,8 +29,8 @@ async function main(): Promise<void> {
 
     // If we are in test mode, load the .env.test file
     // Otherwise, load the .env file
-    if (process.env.NODE_ENV === "test") {
-        config({ path: "./.env.test" });
+    if (process.env.NODE_ENV === 'test') {
+        config({ path: './.env.test' });
     } else {
         config();
     }
@@ -54,7 +54,7 @@ async function main(): Promise<void> {
     // Subscribe to the MQTT topics and handle messages
     try {
         await runSubscriptions(adminTopics);
-        console.log("Subscribed to MQTT topics");
+        console.log('Subscribed to MQTT topics');
         await dispatchMessages(handlers, adminTopics);
     } catch (error) {
         if (error instanceof Error) {

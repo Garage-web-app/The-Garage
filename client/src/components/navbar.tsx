@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from 'react-router-dom';
 
 /**
  * A navigation bar component for the app.

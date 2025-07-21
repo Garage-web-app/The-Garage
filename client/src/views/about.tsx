@@ -1,4 +1,4 @@
-import type { JSX } from "react";
+import type { JSX } from 'react';
 
 /**
  * Returns a JSX element containing the text "About Us" with a red color and large font size.

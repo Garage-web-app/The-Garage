@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Schema, model } from 'mongoose';
 
 async function checkUser(adCreatorEmail: string, interesterEmail: string) {
     if (interesterEmail === adCreatorEmail) {
@@ -40,5 +40,5 @@ const chatSchema = new Schema<Chat>({
 
 chatSchema.methods.checkUser = checkUser;
 
-const ChatModel = model<Chat>("Chat", chatSchema);
+const ChatModel = model<Chat>('Chat', chatSchema);
 export default ChatModel;

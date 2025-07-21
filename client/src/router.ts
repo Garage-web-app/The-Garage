@@ -1,7 +1,7 @@
-import { createBrowserRouter } from "react-router-dom";
-import Home from "./views/home";
-import AboutUs from "./views/about";
-import Layout from "./components/layout";
+import { createBrowserRouter } from 'react-router-dom';
+import Home from './views/home';
+import AboutUs from './views/about';
+import Layout from './components/layout';
 
 /**
  * The router is a collection of routes, each route has a path and a component
@@ -10,7 +10,7 @@ import Layout from "./components/layout";
  */
 const router = createBrowserRouter([
     {
-        path: "/",
+        path: '/',
         Component: Layout,
         children: [
             {
@@ -18,7 +18,7 @@ const router = createBrowserRouter([
                 Component: Home,
             },
             {
-                path: "about",
+                path: 'about',
                 Component: AboutUs,
             },
         ],

@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Schema, model } from 'mongoose';
 
 const adSchema = new Schema<Ad>({
     productionYear: { type: Number, required: true },
@@ -23,5 +23,5 @@ const adSchema = new Schema<Ad>({
     },
 });
 
-const AdModel = model<Ad>("Ad", adSchema);
+const AdModel = model<Ad>('Ad', adSchema);
 export default AdModel;

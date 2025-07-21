@@ -3,8 +3,8 @@
  * @description This file contains the dropDB function, which drops the MongoDB database specified by the DATABASE_URI environment variable.
  * Note that this file is supposed to be used in test mode only.
  */
-import mongoose from "mongoose";
-import { config } from "dotenv";
+import mongoose from 'mongoose';
+import { config } from 'dotenv';
 
 /**
  * Drops the MongoDB database specified by the DATABASE_URI environment variable.
@@ -24,19 +24,19 @@ import { config } from "dotenv";
  */
 async function dropDB(): Promise<void> {
     // If we are not in test mode, throw an error
-    if (!process.env.NODE_ENV || process.env.NODE_ENV !== "test") {
-        throw new Error("NODE_ENV is not test");
+    if (!process.env.NODE_ENV || process.env.NODE_ENV !== 'test') {
+        throw new Error('NODE_ENV is not test');
     }
 
     // Load the .env.test file
-    config({ path: "./.env.test" });
+    config({ path: './.env.test' });
 
     // MongoDB connection string
-    const connectionString: string = process.env.DATABASE_URI || "";
+    const connectionString: string = process.env.DATABASE_URI || '';
 
     // If DATABASE_URI is not defined, throw an error
     if (!connectionString) {
-        throw new Error("DATABASE_URI is not defined");
+        throw new Error('DATABASE_URI is not defined');
     }
 
     // Drop the database
@@ -47,23 +47,23 @@ async function dropDB(): Promise<void> {
 
         // If the database is not found, throw an error
         if (!mongoose.connection.db) {
-            throw new Error("Database not found");
+            throw new Error('Database not found');
         }
 
         // Drop the database
         await mongoose.connection.db.dropDatabase();
-        console.log("Database dropped successfully");
+        console.log('Database dropped successfully');
     } catch (error) {
-        console.error("Error dropping database:", error);
+        console.error('Error dropping database:', error);
     } finally {
         await mongoose.disconnect();
-        console.log("Disconnected from database");
+        console.log('Disconnected from database');
     }
 }
 
 try {
     dropDB();
 } catch (error) {
-    console.error("Error dropping database:", error);
+    console.error('Error dropping database:', error);
     process.exit(1);
 }

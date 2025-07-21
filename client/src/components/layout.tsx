@@ -1,5 +1,5 @@
-import { Outlet } from "react-router-dom";
-import Navbar from "./navbar";
+import { Outlet } from 'react-router-dom';
+import Navbar from './navbar';
 
 /**
  * The root layout component, responsible for rendering the main app layout.

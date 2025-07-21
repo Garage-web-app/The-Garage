@@ -1,1 +1,1 @@
-export const adTopics: string[] = ["ad/test"];
+export const adTopics: string[] = ['ad/test'];

@@ -4,16 +4,16 @@ import {
     adTopics,
     chatTopics,
     notificationTopics,
-} from "../mqtt/topics.js";
-import { publishToTopic } from "../delegators/delegator.js";
-import { getClient } from "../mqtt/mqtt_client.js";
+} from '../mqtt/topics.js';
+import { publishToTopic } from '../delegators/delegator.js';
+import { getClient } from '../mqtt/mqtt_client.js';
 import {
     subscribeToTopic,
     dispatchMessage,
     unsubscribeFromTopic,
-} from "../receivers/receiver.js";
-import { Request, Response, NextFunction } from "express";
-import { findTopic } from "../utils/topic_finder.js";
+} from '../receivers/receiver.js';
+import { Request, Response, NextFunction } from 'express';
+import { findTopic } from '../utils/topic_finder.js';
 
 /**
  * The welcome controller is a special controller that is used to test the
@@ -40,11 +40,11 @@ export async function welcomeController(
     try {
         const client = await getClient();
 
-        const userTopic = findTopic(userTopics, "user/test");
-        const userReplyTopic = userTopic + "/1";
+        const userTopic = findTopic(userTopics, 'user/test');
+        const userReplyTopic = userTopic + '/1';
         const userMessage = JSON.stringify({
-            name: "Gateway",
-            message: "Hell user service",
+            name: 'Gateway',
+            message: 'Hell user service',
             replyTopic: userReplyTopic,
         });
 
@@ -54,11 +54,11 @@ export async function welcomeController(
         const userResponse = await dispatchMessage(client, userReplyTopic);
         await unsubscribeFromTopic(client, userReplyTopic);
 
-        const adminTopic = findTopic(adminTopics, "admin/test");
-        const adminReplyTopic = adminTopic + "/1";
+        const adminTopic = findTopic(adminTopics, 'admin/test');
+        const adminReplyTopic = adminTopic + '/1';
         const adminMessage = JSON.stringify({
-            name: "Gateway",
-            message: "Hello admin service",
+            name: 'Gateway',
+            message: 'Hello admin service',
             replyTopic: adminReplyTopic,
         });
 
@@ -68,11 +68,11 @@ export async function welcomeController(
         const adminResponse = await dispatchMessage(client, adminReplyTopic);
         await unsubscribeFromTopic(client, adminReplyTopic);
 
-        const adTopic = findTopic(adTopics, "ad/test");
-        const adReplyTopic = adTopic + "/1";
+        const adTopic = findTopic(adTopics, 'ad/test');
+        const adReplyTopic = adTopic + '/1';
         const adMessage = JSON.stringify({
-            name: "Gateway",
-            message: "Hello ad service",
+            name: 'Gateway',
+            message: 'Hello ad service',
             replyTopic: adReplyTopic,
         });
 
@@ -82,11 +82,11 @@ export async function welcomeController(
         const adResponse = await dispatchMessage(client, adReplyTopic);
         await unsubscribeFromTopic(client, adReplyTopic);
 
-        const chatTopic = findTopic(chatTopics, "chat/test");
-        const chatReplyTopic = chatTopic + "/1";
+        const chatTopic = findTopic(chatTopics, 'chat/test');
+        const chatReplyTopic = chatTopic + '/1';
         const chatMessage = JSON.stringify({
-            name: "Gateway",
-            message: "Hello chat service",
+            name: 'Gateway',
+            message: 'Hello chat service',
             replyTopic: chatReplyTopic,
         });
 
@@ -98,12 +98,12 @@ export async function welcomeController(
 
         const notificationTopic = findTopic(
             notificationTopics,
-            "notification/test",
+            'notification/test',
         );
-        const notificationReplyTopic = notificationTopic + "/1";
+        const notificationReplyTopic = notificationTopic + '/1';
         const notificationMessage = JSON.stringify({
-            name: "Gateway",
-            message: "Hello notification service",
+            name: 'Gateway',
+            message: 'Hello notification service',
             replyTopic: notificationReplyTopic,
         });
 

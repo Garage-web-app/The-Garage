@@ -1,13 +1,13 @@
-import { config } from "dotenv";
+import { config } from 'dotenv';
 import {
     runSubscriptions,
     dispatchMessages,
     unsubscribeFromTopics,
-} from "./receivers/receiver.js";
-import { notificationTopics } from "./mqtt/topics.js";
-import { getClient } from "./mqtt/mqtt_client.js";
-import mqtt from "mqtt";
-import handlers from "./repliers/replier.js";
+} from './receivers/receiver.js';
+import { notificationTopics } from './mqtt/topics.js';
+import { getClient } from './mqtt/mqtt_client.js';
+import mqtt from 'mqtt';
+import handlers from './repliers/replier.js';
 
 /**
  * The main entry point for the user service.
@@ -40,7 +40,7 @@ async function main(): Promise<void> {
     // Subscribe to the MQTT topics and handle messages
     try {
         await runSubscriptions(notificationTopics);
-        console.log("Subscribed to MQTT topics");
+        console.log('Subscribed to MQTT topics');
         await dispatchMessages(handlers, notificationTopics);
     } catch (error) {
         if (error instanceof Error) {

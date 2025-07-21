@@ -1,1 +1,1 @@
-export const adminTopics: string[] = ["admin/test"];
+export const adminTopics: string[] = ['admin/test'];
