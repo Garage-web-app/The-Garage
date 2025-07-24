@@ -5,17 +5,12 @@ import {
     chatTopics,
     notificationTopics,
 } from '../mqtt/topics.js';
-import { publishToTopic } from '../delegators/delegator.js';
 import { getClient } from '../mqtt/mqtt_client.js';
-import {
-    subscribeToTopic,
-    unsubscribeFromTopic,
-    handleIncomingMessage,
-} from '../receivers/receiver.js';
+import { handleIncomingMessage } from '../receivers/receiver.js';
 import { Request, Response, NextFunction } from 'express';
 import { findTopic } from '../utils/topic_finder.js';
-import { addPending, rejectPending } from '../mqtt/message_handler.js';
 import { randomUUID } from 'crypto';
+import { handleServiceError } from '../utils/response_checker.js';
 
 /**
  * The welcome controller is a special controller that is used to test the
@@ -42,6 +37,7 @@ export async function welcomeController(
     try {
         const client = await getClient();
 
+        // Send a message to each of the services
         const userTopic = findTopic(userTopics, 'user/test');
         const userReplyTopic = userTopic + '/1';
         const userMessage = {
@@ -51,12 +47,12 @@ export async function welcomeController(
             replyTopic: userReplyTopic,
         };
 
-        const userResponse = await handleIncomingMessage(
+        const userResponse = (await handleIncomingMessage(
             client,
             userTopic,
             userReplyTopic,
             userMessage,
-        );
+        )) as WelcomeResponse;
 
         const adminTopic = findTopic(adminTopics, 'admin/test');
         const adminReplyTopic = adminTopic + '/1';
@@ -67,12 +63,12 @@ export async function welcomeController(
             replyTopic: adminReplyTopic,
         };
 
-        const adminResponse = await handleIncomingMessage(
+        const adminResponse = (await handleIncomingMessage(
             client,
             adminTopic,
             adminReplyTopic,
             adminMessage,
-        );
+        )) as WelcomeResponse;
 
         const adTopic = findTopic(adTopics, 'ad/test');
         const adReplyTopic = adTopic + '/1';
@@ -83,12 +79,12 @@ export async function welcomeController(
             replyTopic: adReplyTopic,
         };
 
-        const adResponse = await handleIncomingMessage(
+        const adResponse = (await handleIncomingMessage(
             client,
             adTopic,
             adReplyTopic,
             adMessage,
-        );
+        )) as WelcomeResponse;
 
         const chatTopic = findTopic(chatTopics, 'chat/test');
         const chatReplyTopic = chatTopic + '/1';
@@ -99,12 +95,12 @@ export async function welcomeController(
             replyTopic: chatReplyTopic,
         };
 
-        const chatResponse = await handleIncomingMessage(
+        const chatResponse = (await handleIncomingMessage(
             client,
             chatTopic,
             chatReplyTopic,
             chatMessage,
-        );
+        )) as WelcomeResponse;
 
         const notificationTopic = findTopic(
             notificationTopics,
@@ -118,12 +114,12 @@ export async function welcomeController(
             replyTopic: notificationReplyTopic,
         };
 
-        const notificationResponse = await handleIncomingMessage(
+        const notificationResponse = (await handleIncomingMessage(
             client,
             notificationTopic,
             notificationReplyTopic,
             notificationMessage,
-        );
+        )) as WelcomeResponse;
 
         console.log(userResponse);
         console.log(adminResponse);
@@ -131,7 +127,32 @@ export async function welcomeController(
         console.log(chatResponse);
         console.log(notificationResponse);
 
-        const response: Record<string, unknown> = {
+        // Remove correlation ids
+        delete userResponse.correlationId;
+        delete adminResponse.correlationId;
+        delete adResponse.correlationId;
+        delete chatResponse.correlationId;
+        delete notificationResponse.correlationId;
+
+        // See if any of the services had an error
+        if (
+            handleServiceError('user', userResponse, res) ||
+            handleServiceError('admin', adminResponse, res) ||
+            handleServiceError('ad', adResponse, res) ||
+            handleServiceError('chat', chatResponse, res) ||
+            handleServiceError('notification', notificationResponse, res)
+        ) {
+            return;
+        }
+
+        // Remove status from response
+        delete userResponse.status;
+        delete adminResponse.status;
+        delete adResponse.status;
+        delete chatResponse.status;
+        delete notificationResponse.status;
+
+        const response: Record<string, WelcomeResponse> = {
             user: userResponse,
             admin: adminResponse,
             ad: adResponse,

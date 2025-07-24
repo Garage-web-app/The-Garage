@@ -119,10 +119,21 @@ export async function handleIncomingMessage(
     }
 
     // Step 2: Prepare the response promise
+    let timeoutHandle: NodeJS.Timeout;
     const responsePromise = new Promise<unknown>((resolve, reject) => {
-        addPending(correlationId, resolve, reject);
+        const wrappedResolve = (data: unknown) => {
+            clearTimeout(timeoutHandle);
+            resolve(data);
+        };
 
-        setTimeout(() => {
+        const wrappedReject = (error: unknown) => {
+            clearTimeout(timeoutHandle);
+            reject(error);
+        };
+
+        addPending(correlationId, wrappedResolve, wrappedReject);
+
+        timeoutHandle = setTimeout(() => {
             rejectPending(correlationId, new Error('Request timed out'));
         }, timeoutMs);
     });
