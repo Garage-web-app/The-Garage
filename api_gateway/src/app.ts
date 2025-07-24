@@ -3,8 +3,11 @@ import cookieParser from 'cookie-parser';
 import { config } from 'dotenv';
 import cors from 'cors';
 import morgan from 'morgan';
-import { router as homeRouter } from './routers/home_router.js';
 import errorHandler from './utils/error_handler.js';
+import { getClient } from './mqtt/mqtt_client.js';
+import mqtt from 'mqtt';
+import { setupMessageRouter } from './receivers/receiver.js';
+import { router as homeRouter } from './routers/home_router.js';
 
 // Load environment variables
 config();
@@ -34,6 +37,22 @@ const port: number = parseInt(rawPort);
 
 // Create an Express app
 const app: Express = express();
+
+// Set up mqtt client and messgae router
+try {
+    const mqttClient: mqtt.MqttClient = await getClient();
+
+    // Setup MQTT lifecycle event logging
+    mqttClient.on('connect', () => console.log('MQTT connected'));
+    mqttClient.on('reconnect', () => console.log('MQTT reconnecting...'));
+    mqttClient.on('close', () => console.log('MQTT connection closed'));
+    mqttClient.on('error', (err) => console.error('MQTT error:', err));
+
+    setupMessageRouter(mqttClient);
+    console.log('Message router set up');
+} catch (error) {
+    console.error(error);
+}
 
 // Middlewares
 app.use(cors()); // Enable CORS which allows cross-origin requests. For now we allow all origins

@@ -9,11 +9,13 @@ import { publishToTopic } from '../delegators/delegator.js';
 import { getClient } from '../mqtt/mqtt_client.js';
 import {
     subscribeToTopic,
-    dispatchMessage,
     unsubscribeFromTopic,
+    handleIncomingMessage,
 } from '../receivers/receiver.js';
 import { Request, Response, NextFunction } from 'express';
 import { findTopic } from '../utils/topic_finder.js';
+import { addPending, rejectPending } from '../mqtt/message_handler.js';
+import { randomUUID } from 'crypto';
 
 /**
  * The welcome controller is a special controller that is used to test the
@@ -42,79 +44,86 @@ export async function welcomeController(
 
         const userTopic = findTopic(userTopics, 'user/test');
         const userReplyTopic = userTopic + '/1';
-        const userMessage = JSON.stringify({
+        const userMessage = {
+            correlationId: randomUUID(),
             name: 'Gateway',
             message: 'Hell user service',
             replyTopic: userReplyTopic,
-        });
+        };
 
-        await subscribeToTopic(client, userReplyTopic);
-        await publishToTopic(client, userTopic, userMessage);
-
-        const userResponse = await dispatchMessage(client, userReplyTopic);
-        await unsubscribeFromTopic(client, userReplyTopic);
+        const userResponse = await handleIncomingMessage(
+            client,
+            userTopic,
+            userReplyTopic,
+            userMessage,
+        );
 
         const adminTopic = findTopic(adminTopics, 'admin/test');
         const adminReplyTopic = adminTopic + '/1';
-        const adminMessage = JSON.stringify({
+        const adminMessage = {
+            correlationId: randomUUID(),
             name: 'Gateway',
             message: 'Hello admin service',
             replyTopic: adminReplyTopic,
-        });
+        };
 
-        await subscribeToTopic(client, adminReplyTopic);
-        await publishToTopic(client, adminTopic, adminMessage);
-
-        const adminResponse = await dispatchMessage(client, adminReplyTopic);
-        await unsubscribeFromTopic(client, adminReplyTopic);
+        const adminResponse = await handleIncomingMessage(
+            client,
+            adminTopic,
+            adminReplyTopic,
+            adminMessage,
+        );
 
         const adTopic = findTopic(adTopics, 'ad/test');
         const adReplyTopic = adTopic + '/1';
-        const adMessage = JSON.stringify({
+        const adMessage = {
+            correlationId: randomUUID(),
             name: 'Gateway',
             message: 'Hello ad service',
             replyTopic: adReplyTopic,
-        });
+        };
 
-        await subscribeToTopic(client, adReplyTopic);
-        await publishToTopic(client, adTopic, adMessage);
-
-        const adResponse = await dispatchMessage(client, adReplyTopic);
-        await unsubscribeFromTopic(client, adReplyTopic);
+        const adResponse = await handleIncomingMessage(
+            client,
+            adTopic,
+            adReplyTopic,
+            adMessage,
+        );
 
         const chatTopic = findTopic(chatTopics, 'chat/test');
         const chatReplyTopic = chatTopic + '/1';
-        const chatMessage = JSON.stringify({
+        const chatMessage = {
+            correlationId: randomUUID(),
             name: 'Gateway',
             message: 'Hello chat service',
             replyTopic: chatReplyTopic,
-        });
+        };
 
-        await subscribeToTopic(client, chatReplyTopic);
-        await publishToTopic(client, chatTopic, chatMessage);
-
-        const chatResponse = await dispatchMessage(client, chatReplyTopic);
-        await unsubscribeFromTopic(client, chatReplyTopic);
+        const chatResponse = await handleIncomingMessage(
+            client,
+            chatTopic,
+            chatReplyTopic,
+            chatMessage,
+        );
 
         const notificationTopic = findTopic(
             notificationTopics,
             'notification/test',
         );
         const notificationReplyTopic = notificationTopic + '/1';
-        const notificationMessage = JSON.stringify({
+        const notificationMessage = {
+            correlationId: randomUUID(),
             name: 'Gateway',
             message: 'Hello notification service',
             replyTopic: notificationReplyTopic,
-        });
+        };
 
-        await subscribeToTopic(client, notificationReplyTopic);
-        await publishToTopic(client, notificationTopic, notificationMessage);
-
-        const notificationResponse = await dispatchMessage(
+        const notificationResponse = await handleIncomingMessage(
             client,
+            notificationTopic,
             notificationReplyTopic,
+            notificationMessage,
         );
-        await unsubscribeFromTopic(client, notificationReplyTopic);
 
         console.log(userResponse);
         console.log(adminResponse);

@@ -36,12 +36,18 @@ const welcomeHandler: Handler = {
         client: mqtt.MqttClient,
     ): Promise<void> => {
         let res: Record<string, unknown> = {};
+
         if (!data.replyTopic || typeof data.replyTopic !== 'string') {
             throw new Error('No reply topic provided');
         }
 
+        if (!data.correlationId || typeof data.correlationId !== 'string') {
+            throw new Error('No correlation id provided');
+        }
+
         const replyTopic = data.replyTopic;
         res = sayHello(data);
+        res.correlationId = data.correlationId;
         await publishToTopic(client, replyTopic, JSON.stringify(res));
     },
 };
