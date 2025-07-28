@@ -43,8 +43,15 @@ const welcomeHandler: Handler = {
             throw new Error('No reply topic provided');
         }
 
+        // check for the presence of a "correlationId" property
+        // if there is no "correlationId" property, throw an error
+        if (!data.correlationId || typeof data.correlationId !== 'string') {
+            throw new Error('No correlation id provided');
+        }
+
         const replyTopic = data.replyTopic;
         res = sayHello(data);
+        res.correlationId = data.correlationId;
         await publishToTopic(client, replyTopic, JSON.stringify(res));
     },
 };

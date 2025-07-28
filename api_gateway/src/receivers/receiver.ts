@@ -1,4 +1,10 @@
 import mqtt from 'mqtt';
+import {
+    resolvePending,
+    addPending,
+    rejectPending,
+} from '../mqtt/message_handler.js';
+import { publishToTopic } from '../delegators/delegator.js';
 
 /**
  * Subscribe to the given MQTT topics.
@@ -63,47 +69,98 @@ export async function unsubscribeFromTopic(
 }
 
 /**
- * Listens for a message on a specified MQTT topic and parses it as JSON.
- * Resolves with the parsed message if received within the specified timeout,
- * otherwise rejects with a timeout error.
+ * Set up an MQTT message router for the given client. The router is responsible
+ * for routing incoming messages to the appropriate handler. The handler is
+ * determined by the correlation ID in the message payload. The router is also
+ * responsible for logging any errors that occur while parsing the message.
  *
- * @param client - The MQTT client to use for listening to messages.
- * @param message_topic - The MQTT topic to listen for messages on.
- * @param timeoutMs - The maximum time in milliseconds to wait for a message
- *                    before rejecting the promise. Defaults to 5000 ms.
- * @returns A promise that resolves with the parsed message or rejects with an error.
+ * @param client - The MQTT client to set up the message router for.
  */
+export function setupMessageRouter(client: mqtt.MqttClient) {
+    client.on('message', (topic: string, message: Buffer) => {
+        try {
+            const payload = JSON.parse(message.toString());
+            const { correlationId } = payload;
+            resolvePending(correlationId, payload);
+        } catch (err) {
+            console.error('Invalid message received:', err);
+        }
+    });
+}
 
-export function dispatchMessage(
+/**
+ * Handle an incoming message by subscribing to the reply topic, publishing
+ * the request to the specified topic, waiting for the response, and
+ * unsubscribing from the reply topic.
+ * @param client - The MQTT client to use for subscriptions and publishing.
+ * @param correlationId - The correlation ID for the request.
+ * @param topic - The topic to publish the request to.
+ * @param replyTopic - The topic to subscribe to for the response.
+ * @param payload - The payload to publish in the request.
+ * @param timeoutMs - The amount of time to wait for the response (in ms).
+ * @returns A promise that resolves with the response payload or rejects
+ * with an error if the request times out, or if there is an error
+ * subscribing, publishing, or unsubscribing.
+ */
+export async function handleIncomingMessage(
     client: mqtt.MqttClient,
-    message_topic: string,
+    topic: string,
+    replyTopic: string,
+    payload: Record<string, unknown>,
     timeoutMs = 5000,
 ): Promise<unknown> {
-    return new Promise((resolve, reject) => {
-        const timer = setTimeout(() => {
-            client.removeListener('message', handler);
-            reject(
-                new Error(`Timeout: No message received on ${message_topic}`),
-            );
-        }, timeoutMs);
+    if (payload.correlationId === undefined) {
+        throw new Error('No correlation ID provided');
+    }
 
-        const handler = (topic: string, message: Buffer) => {
-            if (topic === message_topic) {
-                clearTimeout(timer);
-                client.removeListener('message', handler);
-                try {
-                    const parsed = JSON.parse(message.toString());
-                    resolve(parsed);
-                } catch (err) {
-                    reject(
-                        new Error(
-                            `Failed to parse message on ${message_topic}:\n${err}`,
-                        ),
-                    );
-                }
-            }
+    if (typeof payload.correlationId !== 'string') {
+        throw new Error('Correlation ID must be a string');
+    }
+
+    const { correlationId } = payload;
+
+    // Step 1: Subscribe
+    try {
+        await subscribeToTopic(client, replyTopic);
+    } catch (err) {
+        throw new Error(`Failed to subscribe to ${replyTopic}: ${String(err)}`);
+    }
+
+    // Step 2: Prepare the response promise
+    let timeoutHandle: NodeJS.Timeout;
+    const responsePromise = new Promise<unknown>((resolve, reject) => {
+        const wrappedResolve = (data: unknown) => {
+            clearTimeout(timeoutHandle);
+            resolve(data);
         };
 
-        client.on('message', handler);
+        const wrappedReject = (error: unknown) => {
+            clearTimeout(timeoutHandle);
+            reject(error);
+        };
+
+        addPending(correlationId, wrappedResolve, wrappedReject);
+
+        timeoutHandle = setTimeout(() => {
+            rejectPending(correlationId, new Error('Request timed out'));
+        }, timeoutMs);
     });
+
+    // Step 3: Publish the request
+    try {
+        await publishToTopic(client, topic, JSON.stringify(payload));
+    } catch (err) {
+        rejectPending(correlationId, err);
+    }
+
+    // Step 4: Await response and always unsubscribe
+    try {
+        return await responsePromise;
+    } finally {
+        try {
+            await unsubscribeFromTopic(client, replyTopic);
+        } catch (err) {
+            console.error(`Failed to unsubscribe from ${replyTopic}: ${err}`);
+        }
+    }
 }

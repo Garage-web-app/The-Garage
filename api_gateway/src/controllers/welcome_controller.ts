@@ -5,15 +5,12 @@ import {
     chatTopics,
     notificationTopics,
 } from '../mqtt/topics.js';
-import { publishToTopic } from '../delegators/delegator.js';
 import { getClient } from '../mqtt/mqtt_client.js';
-import {
-    subscribeToTopic,
-    dispatchMessage,
-    unsubscribeFromTopic,
-} from '../receivers/receiver.js';
+import { handleIncomingMessage } from '../receivers/receiver.js';
 import { Request, Response, NextFunction } from 'express';
 import { findTopic } from '../utils/topic_finder.js';
+import { randomUUID } from 'crypto';
+import { handleServiceError } from '../utils/response_checker.js';
 
 /**
  * The welcome controller is a special controller that is used to test the
@@ -40,81 +37,89 @@ export async function welcomeController(
     try {
         const client = await getClient();
 
+        // Send a message to each of the services
         const userTopic = findTopic(userTopics, 'user/test');
         const userReplyTopic = userTopic + '/1';
-        const userMessage = JSON.stringify({
+        const userMessage = {
+            correlationId: randomUUID(),
             name: 'Gateway',
             message: 'Hell user service',
             replyTopic: userReplyTopic,
-        });
+        };
 
-        await subscribeToTopic(client, userReplyTopic);
-        await publishToTopic(client, userTopic, userMessage);
-
-        const userResponse = await dispatchMessage(client, userReplyTopic);
-        await unsubscribeFromTopic(client, userReplyTopic);
+        const userResponse = (await handleIncomingMessage(
+            client,
+            userTopic,
+            userReplyTopic,
+            userMessage,
+        )) as WelcomeResponse;
 
         const adminTopic = findTopic(adminTopics, 'admin/test');
         const adminReplyTopic = adminTopic + '/1';
-        const adminMessage = JSON.stringify({
+        const adminMessage = {
+            correlationId: randomUUID(),
             name: 'Gateway',
             message: 'Hello admin service',
             replyTopic: adminReplyTopic,
-        });
+        };
 
-        await subscribeToTopic(client, adminReplyTopic);
-        await publishToTopic(client, adminTopic, adminMessage);
-
-        const adminResponse = await dispatchMessage(client, adminReplyTopic);
-        await unsubscribeFromTopic(client, adminReplyTopic);
+        const adminResponse = (await handleIncomingMessage(
+            client,
+            adminTopic,
+            adminReplyTopic,
+            adminMessage,
+        )) as WelcomeResponse;
 
         const adTopic = findTopic(adTopics, 'ad/test');
         const adReplyTopic = adTopic + '/1';
-        const adMessage = JSON.stringify({
+        const adMessage = {
+            correlationId: randomUUID(),
             name: 'Gateway',
             message: 'Hello ad service',
             replyTopic: adReplyTopic,
-        });
+        };
 
-        await subscribeToTopic(client, adReplyTopic);
-        await publishToTopic(client, adTopic, adMessage);
-
-        const adResponse = await dispatchMessage(client, adReplyTopic);
-        await unsubscribeFromTopic(client, adReplyTopic);
+        const adResponse = (await handleIncomingMessage(
+            client,
+            adTopic,
+            adReplyTopic,
+            adMessage,
+        )) as WelcomeResponse;
 
         const chatTopic = findTopic(chatTopics, 'chat/test');
         const chatReplyTopic = chatTopic + '/1';
-        const chatMessage = JSON.stringify({
+        const chatMessage = {
+            correlationId: randomUUID(),
             name: 'Gateway',
             message: 'Hello chat service',
             replyTopic: chatReplyTopic,
-        });
+        };
 
-        await subscribeToTopic(client, chatReplyTopic);
-        await publishToTopic(client, chatTopic, chatMessage);
-
-        const chatResponse = await dispatchMessage(client, chatReplyTopic);
-        await unsubscribeFromTopic(client, chatReplyTopic);
+        const chatResponse = (await handleIncomingMessage(
+            client,
+            chatTopic,
+            chatReplyTopic,
+            chatMessage,
+        )) as WelcomeResponse;
 
         const notificationTopic = findTopic(
             notificationTopics,
             'notification/test',
         );
         const notificationReplyTopic = notificationTopic + '/1';
-        const notificationMessage = JSON.stringify({
+        const notificationMessage = {
+            correlationId: randomUUID(),
             name: 'Gateway',
             message: 'Hello notification service',
             replyTopic: notificationReplyTopic,
-        });
+        };
 
-        await subscribeToTopic(client, notificationReplyTopic);
-        await publishToTopic(client, notificationTopic, notificationMessage);
-
-        const notificationResponse = await dispatchMessage(
+        const notificationResponse = (await handleIncomingMessage(
             client,
+            notificationTopic,
             notificationReplyTopic,
-        );
-        await unsubscribeFromTopic(client, notificationReplyTopic);
+            notificationMessage,
+        )) as WelcomeResponse;
 
         console.log(userResponse);
         console.log(adminResponse);
@@ -122,7 +127,32 @@ export async function welcomeController(
         console.log(chatResponse);
         console.log(notificationResponse);
 
-        const response: Record<string, unknown> = {
+        // Remove correlation ids
+        delete userResponse.correlationId;
+        delete adminResponse.correlationId;
+        delete adResponse.correlationId;
+        delete chatResponse.correlationId;
+        delete notificationResponse.correlationId;
+
+        // See if any of the services had an error
+        if (
+            handleServiceError('user', userResponse, res) ||
+            handleServiceError('admin', adminResponse, res) ||
+            handleServiceError('ad', adResponse, res) ||
+            handleServiceError('chat', chatResponse, res) ||
+            handleServiceError('notification', notificationResponse, res)
+        ) {
+            return;
+        }
+
+        // Remove status from response
+        delete userResponse.status;
+        delete adminResponse.status;
+        delete adResponse.status;
+        delete chatResponse.status;
+        delete notificationResponse.status;
+
+        const response: Record<string, WelcomeResponse> = {
             user: userResponse,
             admin: adminResponse,
             ad: adResponse,

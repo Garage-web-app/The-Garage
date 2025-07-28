@@ -32,6 +32,12 @@ async function main(): Promise<void> {
     // Connect to the MQTT broker
     try {
         client = await getClient();
+
+        // Setup MQTT lifecycle event logging
+        client.on('connect', () => console.log('MQTT connected'));
+        client.on('reconnect', () => console.log('MQTT reconnecting...'));
+        client.on('close', () => console.log('MQTT connection closed'));
+        client.on('error', (err) => console.error('MQTT error:', err));
     } catch (error) {
         console.log(error);
         process.exit(1);
