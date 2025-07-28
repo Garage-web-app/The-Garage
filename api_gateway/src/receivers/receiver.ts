@@ -68,6 +68,14 @@ export async function unsubscribeFromTopic(
     }
 }
 
+/**
+ * Set up an MQTT message router for the given client. The router is responsible
+ * for routing incoming messages to the appropriate handler. The handler is
+ * determined by the correlation ID in the message payload. The router is also
+ * responsible for logging any errors that occur while parsing the message.
+ *
+ * @param client - The MQTT client to set up the message router for.
+ */
 export function setupMessageRouter(client: mqtt.MqttClient) {
     client.on('message', (topic: string, message: Buffer) => {
         try {
