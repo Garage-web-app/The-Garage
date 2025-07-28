@@ -7,11 +7,13 @@
  */
 export const sayHello = (
     data: Record<string, unknown>,
-): Record<string, string | number | Record<string, string>> => {
-    const res: Record<string, string | number | Record<string, string>> = {};
+): WelcomeResponse | ErrorResponse => {
+    const res: WelcomeResponse | ErrorResponse = {} as
+        | WelcomeResponse
+        | ErrorResponse;
 
     if (!data.message || typeof data.message !== 'string') {
-        res.error = {
+        (res as ErrorResponse).error = {
             message: 'No message provided',
         };
 
@@ -20,7 +22,7 @@ export const sayHello = (
     }
 
     if (!data.name || typeof data.name !== 'string') {
-        res.error = {
+        (res as ErrorResponse).error = {
             message: 'No name provided',
         };
 
@@ -29,8 +31,8 @@ export const sayHello = (
     }
 
     console.log(`${data.name} says: ${data.message}`);
-    res.message = `Hello, ${data.name}!`;
+    (res as WelcomeResponse).message = `Hello, ${data.name}!`;
     res.status = 200;
-    res.name = 'User Service';
+    (res as WelcomeResponse).name = 'User Service';
     return res;
 };

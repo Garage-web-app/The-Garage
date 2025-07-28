@@ -1,1 +1,1 @@
-export const userTopics: string[] = ['user/test'];
+export const userTopics: string[] = ['user/test', 'POST/users'];

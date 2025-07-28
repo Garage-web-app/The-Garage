@@ -6,7 +6,7 @@ declare global {
         correlationId?: string;
     }
 
-    interface SuccessResponse extends ResponseBase {
+    interface WelcomeResponse extends ResponseBase {
         message: string;
         name: string;
     }
@@ -17,5 +17,17 @@ declare global {
         };
     }
 
-    type WelcomeResponse = SuccessResponse | ErrorResponse;
+    interface User extends ResponseBase {
+        fullName: {
+            firstName: string;
+            lastName: string;
+        };
+        email: string;
+        emailVerification: boolean;
+        dateOfBirth: Date;
+        isAdmin: boolean;
+        profilePicture: string; //url to the profile picture
+        blockedUsers?: User[];
+        password?: string;
+    }
 }

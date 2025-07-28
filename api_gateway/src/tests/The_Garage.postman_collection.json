@@ -7,7 +7,7 @@
 	},
 	"item": [
 		{
-			"name": "Get welcome endpoint",
+			"name": "Get_welcome_endpoint",
 			"event": [
 				{
 					"listen": "test",
@@ -32,7 +32,8 @@
 							"    pm.expect(res.chat.name).to.eql(\"Chat Service\")",
 							"    pm.expect(res.notification).to.have.property(\"name\")",
 							"    pm.expect(res.notification.name).to.eql(\"Notification Service\")",
-							"});"
+							"});",
+							""
 						],
 						"type": "text/javascript",
 						"packages": {}
@@ -60,6 +61,287 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Create_user",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Check if the response status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Check if the response body contains the correct data\", function () {",
+							"    let responseBody = pm.response.json();",
+							"    pm.expect(responseBody.fullName.firstName).to.eql(\"Makan\");",
+							"    pm.expect(responseBody.fullName.lastName).to.eql(\"Salehi\");",
+							"    pm.expect(responseBody.email).to.eql(pm.collectionVariables.get(\"user_email\"));",
+							"    pm.expect(responseBody.emailVerification).to.eql(false);",
+							"    pm.expect(responseBody.dateOfBirth).to.eql(1753718796000);",
+							"    pm.expect(responseBody.isAdmin).to.eql(false);",
+							"    pm.expect(responseBody.profilePicture).to.not.be.empty;",
+							"    pm.expect(responseBody.blockedUsers).to.eql([]);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"fullName\": {\n        \"firstName\": \"Makan\",\n        \"lastName\": \"Salehi\"\n    },\n    \"email\": \"{{user_email}}\",\n    \"emailVerification\": false,\n    \"dateOfBirth\": 1753718796000,\n    \"isAdmin\": false,\n    \"profilePicture\": \"{{$randomImageDataUri}}\",\n    \"password\": \"Omid1234@\"\n\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:3000/api/v1/users/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"v1",
+						"users",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create_user_wrong_email",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Check if the response status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"fullName\": {\n        \"firstName\": \"Makan\",\n        \"lastName\": \"Salehi\"\n    },\n    \"email\": \"omidKhoda2002\",\n    \"emailVerification\": false,\n    \"dateOfBirth\": 1753718796000,\n    \"isAdmin\": false,\n    \"profilePicture\": \"{{$randomImageDataUri}}\",\n    \"password\": \"Omid1234@\"\n\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:3000/api/v1/users/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"v1",
+						"users",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create_user_weak_password",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Check if the response status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"fullName\": {\n        \"firstName\": \"Makan\",\n        \"lastName\": \"Salehi\"\n    },\n    \"email\": \"omidKhoda2003@gmail.com\",\n    \"emailVerification\": false,\n    \"dateOfBirth\": 1753718796000,\n    \"isAdmin\": false,\n    \"profilePicture\": \"{{$randomImageDataUri}}\",\n    \"password\": \"mid\"\n\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:3000/api/v1/users/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"v1",
+						"users",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create_user_dup_emil",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 409\", function () {",
+							"    pm.response.to.have.status(409);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"fullName\": {\n        \"firstName\": \"Makan\",\n        \"lastName\": \"Salehi\"\n    },\n    \"email\": \"{{user_email}}\",\n    \"emailVerification\": false,\n    \"dateOfBirth\": 1753707968,\n    \"isAdmin\": false,\n    \"profilePicture\": \"{{$randomImageDataUri}}\",\n    \"password\": \"Omid1234@\"\n\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:3000/api/v1/users/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"v1",
+						"users",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create_user_missing_attr",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Check if the response status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"fullName\": {\n        \"lastName\": \"Salehi\"\n    },\n    \"email\": \"email@gmail.com\",\n    \"emailVerification\": false,\n    \"dateOfBirth\": 1753718796000,\n    \"isAdmin\": false,\n    \"profilePicture\": \"{{$randomImageDataUri}}\",\n    \"password\": \"MOBINISANIGGA\"\n\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:3000/api/v1/users/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"v1",
+						"users",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "user_email",
+			"value": "omidkhoda2002@gmail.com",
+			"type": "string"
 		}
 	]
 }

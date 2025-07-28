@@ -8,6 +8,10 @@ import { getClient } from './mqtt/mqtt_client.js';
 import mqtt from 'mqtt';
 import { setupMessageRouter } from './receivers/receiver.js';
 import { router as homeRouter } from './routers/home_router.js';
+import { router as userRouter } from './routers/user_router.js';
+import https from 'https';
+import fs from 'fs';
+import path from 'path';
 
 // Load environment variables
 config();
@@ -66,6 +70,7 @@ if (env === 'development' || env === 'test') {
 }
 
 // Routers
+app.use('/api/v1/users', userRouter);
 app.use('/api/v1/', homeRouter); // Use the home router for the root route
 
 // Error handler which is called for 500 status codes
@@ -75,3 +80,16 @@ app.use(errorHandler);
 app.listen(port, host, () => {
     console.log(`Gateway running on port ${port}`);
 });
+
+// Set up https: Postman for now does not work with this. We need to uncomment this before production
+// Step 1: Load SSL certificate and private key
+// const sslOptions = {
+//     key: fs.readFileSync(path.resolve('certs/server.key')),
+//     cert: fs.readFileSync(path.resolve('certs/server.crt')),
+// };
+// // Step 2: Create HTTPS server
+// const server = https.createServer(sslOptions, app);
+// // Start the server
+// server.listen(port, host, () => {
+//     console.log(`Gateway running on port ${port}`);
+// });

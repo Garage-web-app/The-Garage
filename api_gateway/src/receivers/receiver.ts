@@ -93,7 +93,6 @@ export function setupMessageRouter(client: mqtt.MqttClient) {
  * the request to the specified topic, waiting for the response, and
  * unsubscribing from the reply topic.
  * @param client - The MQTT client to use for subscriptions and publishing.
- * @param correlationId - The correlation ID for the request.
  * @param topic - The topic to publish the request to.
  * @param replyTopic - The topic to subscribe to for the response.
  * @param payload - The payload to publish in the request.

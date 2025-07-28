@@ -17,6 +17,9 @@ export function handleServiceError(
     response: ResponseBase,
     res: Response,
 ): boolean {
+    if (!response.status) {
+        throw new Error(`${serviceName}: No status found in response`);
+    }
     // If the response status is 200 or 201, return false as it is not an error
     if (response.status === 200 || response.status === 201) {
         return false;

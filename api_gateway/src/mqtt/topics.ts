@@ -1,4 +1,4 @@
-export const userTopics: string[] = ['user/test'];
+export const userTopics: string[] = ['user/test', 'POST/users'];
 
 export const adminTopics: string[] = ['admin/test'];
 

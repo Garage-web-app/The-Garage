@@ -1,5 +1,6 @@
 import { sayHello } from '../logic/welcome.js';
 import mqtt from 'mqtt';
+import { createUser } from '../logic/user_creation.js';
 
 /**
  * Publish a message to the specified MQTT topic.
@@ -35,7 +36,9 @@ const welcomeHandler: Handler = {
         data: Record<string, unknown>,
         client: mqtt.MqttClient,
     ): Promise<void> => {
-        let res: Record<string, unknown> = {};
+        let res: WelcomeResponse | ErrorResponse = {} as
+            | WelcomeResponse
+            | ErrorResponse;
 
         // check for the presence of a "replyTopic" property
         // if there is no "replyTopic" property, throw an error
@@ -56,6 +59,32 @@ const welcomeHandler: Handler = {
     },
 };
 
-const handlers: Handler[] = [welcomeHandler];
+const userCreationHandler: Handler = {
+    'POST/users': async (
+        data: Record<string, unknown>,
+        client: mqtt.MqttClient,
+    ): Promise<void> => {
+        let res: UserRes | ErrorResponse = {} as User | ErrorResponse;
+
+        // check for the presence of a "replyTopic" property
+        // if there is no "replyTopic" property, throw an error
+        if (!data.replyTopic || typeof data.replyTopic !== 'string') {
+            throw new Error('No reply topic provided');
+        }
+
+        // check for the presence of a "correlationId" property
+        // if there is no "correlationId" property, throw an error
+        if (!data.correlationId || typeof data.correlationId !== 'string') {
+            throw new Error('No correlation id provided');
+        }
+
+        const replyTopic = data.replyTopic;
+        res = await createUser(data);
+        res.correlationId = data.correlationId;
+        await publishToTopic(client, replyTopic, JSON.stringify(res));
+    },
+};
+
+const handlers: Handler[] = [welcomeHandler, userCreationHandler];
 
 export default handlers;
