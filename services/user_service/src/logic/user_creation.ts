@@ -38,9 +38,8 @@ export async function createUser(
         // Set status to 201
         res.status = 201;
 
+        // Convert date of birth to timestamp
         res.dateOfBirth = new Date(res.dateOfBirth).getTime();
-
-        console.log(res.dateOfBirth);
 
         // Return the user
         return res;

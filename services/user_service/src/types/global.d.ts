@@ -19,10 +19,10 @@ declare global {
         emailVerification: boolean;
         dateOfBirth: Date | number;
         isAdmin: boolean;
-        profilePicture: string; //url to the profile picture
+        profilePicture?: string; //url to the profile picture
         blockedUsers: User[];
         password: string;
-        sessionTime: Date;
+        sessionTime?: Date;
     }
 
     interface ResponseBase {
@@ -50,9 +50,18 @@ declare global {
         emailVerification: boolean;
         dateOfBirth: Date | number;
         isAdmin: boolean;
-        profilePicture: string; //url to the profile picture
+        profilePicture?: string; //url to the profile picture
         blockedUsers: User[];
         password?: string;
         sessionTime?: Date;
+    }
+
+    interface SightengineResponse {
+        nudity: { none: number };
+        recreational_drug: { prob: number };
+        medical: { prob: number };
+        offensive: Record<string, number>;
+        text: Record<string, unknown>;
+        gore: { prob: number };
     }
 }
