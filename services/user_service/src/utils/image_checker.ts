@@ -132,16 +132,19 @@ async function isSuitableImage(base64Image: string): Promise<boolean> {
 
         // Check if nudity is above 50%
         if (response.data.nudity.none < 0.5) {
+            console.log('Nudity is below 50%');
             return false;
         }
 
         // Check if recreational drug is above 50%
         if (response.data.recreational_drug.prob > 0.5) {
+            console.log('Recreational drug is above 50%');
             return false;
         }
 
         // Check if medical (pills, drugs) is above 50%
         if (response.data.medical.prob > 0.5) {
+            console.log('Medical is above 50%');
             return false;
         }
 
@@ -149,6 +152,7 @@ async function isSuitableImage(base64Image: string): Promise<boolean> {
         // Check if the probability is above 50%
         for (const category in response.data.offensive) {
             if (response.data.offensive[category] > 0.5) {
+                console.log(`Offensive ${category} is above 50%`);
                 return false;
             }
         }
@@ -161,13 +165,21 @@ async function isSuitableImage(base64Image: string): Promise<boolean> {
             if (Array.isArray(response.data.text[category])) {
                 // if the length is not 0, return false
                 if (category.length > 0) {
-                    return false;
+                    for (const text of response.data.text[category]) {
+                        if (text) {
+                            console.log(
+                                `Text ${text} in category ${category} was found`,
+                            );
+                            return false;
+                        }
+                    }
                 }
             }
         }
 
         // Check if gore is above 50%
         if (response.data.gore.prob > 0.5) {
+            console.log('Gore is above 50%');
             return false;
         }
 
